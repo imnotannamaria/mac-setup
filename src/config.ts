@@ -15,6 +15,7 @@ export const moduleLabels: Record<ModuleId, string> = {
 };
 
 export const appCatalog = [
+  { id: 'dia', label: 'Dia', cask: 'thebrowsercompany-dia', app: 'Dia.app' },
   { id: 'chrome', label: 'Google Chrome', cask: 'google-chrome', app: 'Google Chrome.app' },
   { id: 'claude', label: 'Claude', cask: 'claude', app: 'Claude.app' },
   { id: 'claude-code', label: 'Claude Code CLI', cask: 'claude-code', binary: 'claude' },

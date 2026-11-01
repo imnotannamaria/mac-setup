@@ -26,8 +26,8 @@ test('preview is the default; invalid flags and conflicting modes fail', () => {
   assert.throws(() => parseOptions(['--apps', 'typo']));
   assert.throws(() => parseOptions(['--only', 'editor', '--apps', 'chrome']));
   assert.throws(() => parseOptions(['--aplly']));
-  assert.throws(() => parseOptions(['--apps', 'dia']));
-  assert.ok(!parseOptions([]).selection.apps.includes('dia'));
+  assert.ok(parseOptions([]).selection.apps.includes('dia'));
+  assert.deepEqual(parseOptions(['--apps', 'dia']).selection.apps, ['dia']);
 });
 
 test('bootstrap rejects invalid flags, missing arguments and conflicting modes before dependency checks', async () => {
