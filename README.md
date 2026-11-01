@@ -44,8 +44,14 @@ Set `MAC_SETUP_GIT_NAME` and `MAC_SETUP_GIT_EMAIL` together, or leave both empty
 | [autopair.fish](https://github.com/jorgebucaran/autopair.fish) | Adds matching quotes and brackets. | `(` inserts `()`. |
 | [puffer-fish](https://github.com/nickeb96/puffer-fish) | Expands history and directory shortcuts. | `!!`: last command; `!$`: last argument; `...`: `../..`. |
 | [nvm.fish](https://github.com/jorgebucaran/nvm.fish) | Installs and switches Node.js versions. | `nvm install lts` |
+| [fzf.fish](https://github.com/PatrickF1/fzf.fish) | Searches files, history, Git changes, and processes with previews. | `Ctrl+R` searches history. |
+| [forgit](https://github.com/wfxr/forgit) | Adds interactive Git selectors. Installed with Homebrew; its default aliases are disabled. | `git forgit log` |
+| [sponge](https://github.com/meaningful-ooo/sponge) | Filters failed commands from history, keeping the latest two available for corrections. | Mistyped commands stop cluttering history. |
+| [fish-abbreviation-tips](https://github.com/gazorby/fish-abbreviation-tips) | Reminds you when an alias or abbreviation could shorten a command. | Suggests `gs` for `git status`. |
 
 The terminal module installs missing plugins with Fisher and backs up existing Fish state first. It preserves extra plugins and removes the old `jethrokuan/z` plugin if Fisher manages it. Directory jumping uses zoxide instead: `z mac-setup`.
+
+`fzf.fish` uses Homebrew's `fzf`, `fd`, and `bat`. Native `fzf --fish` bindings are disabled to avoid conflicts. Forgit is available through `git forgit`, preserving aliases such as `ga` and `gco`.
 
 ## Before applying
 

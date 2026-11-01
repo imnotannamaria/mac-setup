@@ -17,6 +17,10 @@ for variable in (set --names --universal | string match '_fisher_*_files')
         set -l expanded (string replace --regex '^~/' "$HOME/" -- "$file")
         set -l normalized (path normalize -- "$expanded")
         set -l prefix "$__fish_config_dir/"
+        if test -L "$normalized"
+            echo 'A Fisher-managed file is a symlink. Resolve it before installing plugins.' >&2
+            exit 1
+        end
         if test (string sub --length (string length -- "$prefix") -- "$normalized") != "$prefix"
             echo 'Fisher manages files outside the standard config directory. Migrate them first.' >&2
             exit 1

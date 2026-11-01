@@ -52,8 +52,9 @@ export function buildPlan(selection: Selection, local: LocalConfig, root: string
   if (has('terminal')) {
     pkg('terminal', 'warp', true, 'Warp.app');
     pkg('terminal', 'font-jetbrains-mono-nerd-font', true);
-    for (const name of ['fish', 'starship', 'zoxide', 'fzf', 'bat', 'eza', 'tmux']) pkg('terminal', name);
+    for (const name of ['fish', 'starship', 'zoxide', 'fzf', 'fd', 'forgit', 'bat', 'eza', 'tmux']) pkg('terminal', name);
     file('terminal', 'config/fish/config.fish', '.config/fish/config.fish');
+    file('terminal', 'config/fish/00-mac-setup-plugins.fish', '.config/fish/conf.d/00-mac-setup-plugins.fish');
     const plugins = readFileSync(join(root, 'config/fish/fish_plugins'), 'utf8').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
     if (!plugins.length || plugins.some(plugin => !/^[\w.-]+\/[\w.-]+$/.test(plugin))) throw new Error('Invalid Fish plugin list.');
     actions.push({ module: 'terminal', kind: 'fish-plugins', plugins, remove: ['jethrokuan/z'],

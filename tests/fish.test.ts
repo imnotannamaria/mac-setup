@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { buildPlan, type Action } from '../src/plan.ts';
 import { fisherBootstrap, installFishPlugins } from '../src/fish.ts';
-import { findExecutable, type RunCommand } from '../src/runner.ts';
+import { findExecutable, runCommand, type RunCommand } from '../src/runner.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const local = { MAC_SETUP_GIT_NAME: '', MAC_SETUP_GIT_EMAIL: '' };
@@ -116,11 +116,56 @@ test('Fish wrapper accepts an empty list and rejects custom paths using an isola
     const bootstrap = join(f.dir, 'bootstrap.fish');
     await writeFile(bootstrap, 'function fisher; return 1; end\n');
     const env = { ...process.env, HOME: f.home, XDG_CONFIG_HOME: join(f.home, '.config'), XDG_DATA_HOME: join(f.home, '.local/share') };
-    const args = ['--no-config', join(root, 'config/fish/manage-plugins.fish'), bootstrap, 'list'];
+    const args = ['--private', join(root, 'config/fish/manage-plugins.fish'), bootstrap, 'list'];
     const empty = spawnSync(fish, args, { env, encoding: 'utf8' });
     assert.equal(empty.status, 0, empty.stderr);
     const custom = spawnSync(fish, args, { env: { ...env, fisher_path: join(f.dir, 'outside') }, encoding: 'utf8' });
     assert.equal(custom.status, 1);
     assert.match(custom.stderr, /Custom fisher_path/);
   } finally { await f.cleanup(); }
+});
+
+test('Fisher metadata persists across real Fish processes and a rerun is unchanged', async t => {
+  const fish = await findExecutable('fish');
+  if (!fish) { t.skip('Fish executable is not available.'); return; }
+  const f = await fixture();
+  const bootstrap = `function fisher
+    switch $argv[1]
+        case list
+            set -q _fisher_plugins[1]; or return 1
+            printf '%s\\n' $_fisher_plugins
+        case install
+            set --universal --append _fisher_plugins $argv[2..]
+    end
+end
+`;
+  const pinned = { ...source, sha256: createHash('sha256').update(bootstrap).digest('hex') };
+  const run: RunCommand = async (command, args) => {
+    if (command.endsWith('/curl')) {
+      await writeFile(args[args.indexOf('--output') + 1]!, bootstrap);
+      return { code: 0, stdout: '', stderr: '' };
+    }
+    return runCommand(command,args);
+  };
+  try {
+    const context = {...f.context,fish};
+    assert.equal(await installFishPlugins(pluginAction,context,run,pinned),'installed');
+    assert.equal(await installFishPlugins(pluginAction,{...context,backupRoot:join(f.dir,'second')},run,pinned),'unchanged');
+  } finally { await f.cleanup(); }
+});
+
+test('unmanaged vendor completion symlinks are preserved without changing their targets', async () => {
+  const f = await fixture();
+  try {
+    const external=join(f.dir,'vendor.fish');
+    await writeFile(external,'vendor completion');
+    await mkdir(join(f.home,'.config/fish/completions'));
+    await symlink(external,join(f.home,'.config/fish/completions/vendor.fish'));
+    const run:RunCommand=async(command,args)=>{
+      if(command.endsWith('/curl')) await writeFile(args[args.indexOf('--output')+1]!,fixtureBootstrap);
+      return {code:0,stdout:pluginAction.plugins.join('\n'),stderr:''};
+    };
+    await installFishPlugins(pluginAction,f.context,run,source);
+    assert.equal(await readFile(external,'utf8'),'vendor completion');
+  } finally {await f.cleanup();}
 });

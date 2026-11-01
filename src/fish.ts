@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { cp, lstat, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { cp, lstat, stat as followStat, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Action } from './plan.ts';
@@ -14,7 +14,12 @@ async function rejectSymlinks(path: string): Promise<void> {
   let stat;
   try { stat = await lstat(path); }
   catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return; throw error; }
-  if (stat.isSymbolicLink()) throw new Error('Fish config contains a symlink; resolve it before installing plugins.');
+  if (stat.isSymbolicLink()) {
+    // Vendor completions (e.g. OrbStack) link to regular files. Fisher refuses
+    // conflicts on new installs; managed links are additionally rejected by the wrapper.
+    try { if ((await followStat(path)).isFile()) return; } catch { /* Reject broken links. */ }
+    throw new Error('Fish config contains a directory or broken symlink; resolve it before installing plugins.');
+  }
   if (stat.isDirectory()) for (const entry of await readdir(path)) await rejectSymlinks(join(path, entry));
 }
 
@@ -33,6 +38,11 @@ export async function installFishPlugins(
     if ((await lstat(configParent)).isSymbolicLink()) throw new Error('Fish config parent is a symlink; resolve it before installing plugins.');
   } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
   const config = join(configParent, 'fish');
+  for (const path of [config, ...['functions', 'conf.d', 'completions', 'themes', 'fish_plugins', 'fish_variables'].map(name => join(config, name))]) {
+    try {
+      if ((await lstat(path)).isSymbolicLink()) throw new Error('Fish state or directory is a symlink; resolve it before installing plugins.');
+    } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
+  }
   await rejectSymlinks(config);
   const backup = join(context.backupRoot, 'fish-plugins', '.config', 'fish');
   let configExists = false;
@@ -53,7 +63,9 @@ export async function installFishPlugins(
   };
   const fisher = (args: string[]) => checked('/usr/bin/env', [
     `HOME=${context.home}`, `XDG_CONFIG_HOME=${configParent}`, `XDG_DATA_HOME=${join(context.home, '.local/share')}`,
-    context.fish, '--no-config', join(context.root, 'config/fish/manage-plugins.fish'), bootstrap, ...args,
+    // --no-config disables persistent universal variables in Fish 4. Use a
+    // normal non-interactive process so Fisher can read/write its metadata.
+    context.fish, '--private', join(context.root, 'config/fish/manage-plugins.fish'), bootstrap, ...args,
   ]);
   const list = async () => (await fisher(['list'])).stdout.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
   try {

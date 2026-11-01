@@ -19,9 +19,7 @@ if status is-interactive
         zoxide init fish | source
         alias cd='z'
     end
-    if type -q fzf
-        fzf --fish | source
-    end
+    # fzf.fish supplies the search bindings; don't load fzf's competing bindings.
     if type -q bat
         alias cat='bat'
     end
