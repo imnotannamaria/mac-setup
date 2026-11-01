@@ -1,0 +1,4 @@
+# Future installer output: conf.d/mac-setup.local.fish (local, never public).
+# Fill locally to enable the pr-git-name, pr-git-email and pr-commit helpers.
+set -gx MAC_SETUP_GIT_NAME ''
+set -gx MAC_SETUP_GIT_EMAIL ''
