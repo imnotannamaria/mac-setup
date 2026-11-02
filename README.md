@@ -6,20 +6,50 @@ Installs my apps and tools, restores Fish and Cursor configs, and sets my macOS 
 
 Want your agent to handle setup? Copy [AGENTS.md](AGENTS.md) into its chat, share this repo, and tell it which modules and terminal you want.
 
-## Run
+## Install on a new Mac
 
-From a local checkout:
+Open **Terminal** (`Cmd+Space`, then type `Terminal`).
+
+**1. Check Git:**
 
 ```sh
-./install.sh                              # Choose modules and preview
-./install.sh --apply                      # Review, confirm, and install
-./install.sh --dry-run --only terminal,editor
-./install.sh --apply --only terminal --terminal ghostty
-./install.sh --help
-./install.sh --doctor --only terminal --terminal ghostty
+git --version
 ```
 
-Use Space to select and Enter to continue. The bootstrap asks before installing missing dependencies. Preview needs Node.js 22.16+ and repo dependencies already installed; it won't install them for you. Apple Command Line Tools are required for bootstrap.
+If macOS offers to install developer tools, accept and wait for it to finish. If Git is unavailable and no dialog appears, run `xcode-select --install`. These tools include Git; you don't need the full Xcode app.
+
+**2. Clone and preview:**
+
+```sh
+git clone https://github.com/imnotannamaria/mac-setup.git ~/mac-setup
+cd ~/mac-setup
+./install.sh
+```
+
+The bootstrap asks before preparing missing Homebrew, Node.js, and npm dependencies. Choose modules, apps, and Warp or Ghostty with the keyboard. Space selects; Enter continues. This run previews the setup.
+
+**3. Install:**
+
+```sh
+./install.sh --apply
+```
+
+Choose your selection, review, and confirm. Close Cursor if installing its settings. Existing configs are backed up. Finish any logins and permission prompts shown at the end.
+
+Optional: configure your Git identity under [Personal settings](#personal-settings) before applying.
+
+## Other commands
+
+```sh
+./install.sh --dry-run --only terminal,editor
+./install.sh --apply --only terminal --terminal ghostty
+./install.sh --doctor --only terminal --terminal ghostty
+./install.sh --help
+```
+
+`--dry-run`, `--doctor`, and `--help` won't prepare missing dependencies. Run `./install.sh` first if Node.js 22.16+ or the repo packages are missing.
+
+## What it installs
 
 | Module | Includes |
 | --- | --- |
