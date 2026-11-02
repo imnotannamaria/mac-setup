@@ -9,6 +9,8 @@ APPLY=false
 DRY_RUN=false
 ONLY_SELECTION='apps,dev,terminal,editor,macos'
 APPS_SPECIFIED=false
+TERMINAL_SPECIFIED=false
+TERMINAL_SELECTION=warp
 parse_bootstrap_options() {
   while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -16,13 +18,18 @@ parse_bootstrap_options() {
       --help|-h) READ_ONLY=true ;;
       --yes) ASSUME_YES=true ;;
       --apply) APPLY=true ;;
-      --only|--apps)
+      --only|--apps|--terminal)
         if [ "$#" -lt 2 ]; then echo "Missing value for $1" >&2; exit 1; fi
         case "$2" in --*) echo "Missing value for $1" >&2; exit 1 ;; esac
-        if [ "$1" = --only ]; then ONLY_SELECTION="$2"; else APPS_SPECIFIED=true; fi
+        case "$1" in
+          --only) ONLY_SELECTION="$2" ;;
+          --apps) APPS_SPECIFIED=true ;;
+          --terminal) TERMINAL_SPECIFIED=true; TERMINAL_SELECTION="$2" ;;
+        esac
         shift ;;
       --only=*) ONLY_SELECTION="${1#--only=}" ;;
       --apps=*) APPS_SPECIFIED=true ;;
+      --terminal=*) TERMINAL_SPECIFIED=true; TERMINAL_SELECTION="${1#--terminal=}" ;;
       *) echo "Unknown argument: $1" >&2; exit 1 ;;
     esac
     shift
@@ -38,6 +45,10 @@ if [[ ! "$ONLY_SELECTION" =~ $MODULE_PATTERN ]]; then
 fi
 if [ "$APPS_SPECIFIED" = true ]; then
   case ",$ONLY_SELECTION," in *,apps,*) ;; *) echo '--apps requires the apps module.' >&2; exit 1 ;; esac
+fi
+case "$TERMINAL_SELECTION" in warp|ghostty) ;; *) echo 'Choose --terminal warp or ghostty.' >&2; exit 1 ;; esac
+if [ "$TERMINAL_SPECIFIED" = true ]; then
+  case ",$ONLY_SELECTION," in *,terminal,*) ;; *) echo '--terminal requires the terminal module.' >&2; exit 1 ;; esac
 fi
 
 node_ready() {

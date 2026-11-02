@@ -44,6 +44,7 @@ async function main() {
                     Also confirms changes when paired with --apply
   --only <modules>  Comma-separated modules: ${moduleIds.join(',')}
   --apps <ids>      Choose apps in the apps module (empty string selects none)
+  --terminal <app>  Choose warp or ghostty (default: warp)
   --help, -h        Show this help
 
 App IDs: ${appCatalog.map(app => app.id).join(', ')}
@@ -67,11 +68,20 @@ Local Git identity comes from .env.local or MAC_SETUP_GIT_NAME/MAC_SETUP_GIT_EMA
       initialValues: selection.modules, required: true,
     }));
     let apps = selection.apps;
+    let terminal = selection.terminal;
+    if (modules.includes('terminal') && options.terminal === undefined) {
+      terminal = answer(await prompts.select({ message: 'Which terminal should this Mac use?',
+        options: [
+          { value: 'warp' as const, label: 'Warp + Fish + Starship' },
+          { value: 'ghostty' as const, label: 'Ghostty + Fish + Starship' },
+        ], initialValue: terminal ?? 'warp',
+      }));
+    }
     if (modules.includes('apps')) apps = answer(await prompts.multiselect({ message: 'Choose your apps',
       options: appCatalog.map(app => ({ value: app.id as string, label: app.label })),
       initialValues: apps, required: false,
     }));
-    selection = selectionSchema.parse({ modules, apps });
+    selection = selectionSchema.parse({ modules, apps, terminal });
   }
   const local = loadLocalConfig(root);
   const plan = buildPlan(selection, local, root, homedir());

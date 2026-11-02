@@ -1,0 +1,17 @@
+# Fish path is filled by the installer for Apple Silicon or Intel Homebrew.
+command = {{FISH_PATH}}
+font-family = JetBrainsMono Nerd Font Mono
+font-size = 18
+shell-integration = fish
+
+# Dark theme with warm accents.
+theme = Vesper
+
+# Initial size in columns and rows, not pixels. Applies to new windows.
+window-width = 100
+window-height = 26
+window-padding-x = 12
+window-padding-y = 10
+
+# Changes the Dock/app-switcher icon; Finder keeps the bundled app icon.
+macos-icon = holographic

@@ -4,6 +4,8 @@ My Mac setup, so I don't have to remember everything when I get a new Mac or sta
 
 Installs my apps and tools, restores Fish and Cursor configs, and sets my macOS preferences. Built with TypeScript, Zod, and Clack.
 
+Want your agent to handle setup? Copy [AGENTS.md](AGENTS.md) into its chat, share this repo, and tell it which modules and terminal you want.
+
 ## Run
 
 From a local checkout:
@@ -12,6 +14,7 @@ From a local checkout:
 ./install.sh                              # Choose modules and preview
 ./install.sh --apply                      # Review, confirm, and install
 ./install.sh --dry-run --only terminal,editor
+./install.sh --apply --only terminal --terminal ghostty
 ./install.sh --help
 ```
 
@@ -19,15 +22,19 @@ Use Space to select and Enter to continue. The bootstrap asks before installing 
 
 | Module | Includes |
 | --- | --- |
-| `apps` | Browsers, AI tools, productivity and communication apps |
-| `dev` | Node/npm, Python/uv, Git, GitHub CLI, OrbStack |
-| `terminal` | Warp, Fish, Starship, plugins, shell tools, JetBrains Mono Nerd Font |
-| `editor` | Cursor, settings, keybindings, Bearded Theme, Material Icon Theme, Cursor Pyright |
-| `macos` | Dark mode, scrolling, Finder and Dock preferences |
+| `apps` | **Browsers:** Dia, Google Chrome. **AI:** Claude, Claude Code CLI, ChatGPT, Codex CLI, Codex desktop. **Work and personal:** Notion, Spotify, Granola, Slack, Linear, Raycast, Discord, Zoom, WhatsApp, RunCat, TextWarden. Select individual apps in the menu or with `--apps`. |
+| `dev` | Node.js (includes npm), Python, uv, Git, GitHub CLI (`gh`), and OrbStack. |
+| `terminal` | **App:** Warp or Ghostty. **Shell and prompt:** Fish, Starship. **Tools:** zoxide, fzf, fd, forgit, bat, eza, tmux. **Font:** JetBrains Mono Nerd Font. Restores Fish config, Git/Docker/npm/tmux aliases, and the [plugins below](#fish-plugins). Ghostty also gets its shell and font config; optional Git identity comes from `.env.local`. |
+| `editor` | Cursor and JetBrains Mono Nerd Font. Restores editor settings and keybindings, including `Cmd+I` for the agent. Installs Bearded Theme, Material Icon Theme, and Cursor Pyright. |
+| `macos` | **Appearance:** dark mode; natural scrolling off. **Finder:** list view, path bar and status bar visible. **Dock:** auto-hide off, icon size 41, minimize-to-app-icon off. |
 
 RunCat uses [mas](https://github.com/mas-cli/mas): sign in to the App Store with an account that already acquired the app. TextWarden uses the [official DMG](https://github.com/PhilipSchmid/textwarden/releases/tag/v0.6.0), pinned to 0.6.0 with SHA-256 verification. Both are skipped if already installed.
 
+Choose Warp or Ghostty in the interactive menu, or pass `--terminal warp` / `--terminal ghostty`. Warp remains the default for unattended runs. Both use Fish + Starship. Ghostty gets a config with Fish and JetBrains Mono Nerd Font Mono; selecting either terminal doesn't uninstall the other.
+
 ## Personal settings
+
+Ghostty's look is saved in [`config/ghostty/config`](config/ghostty/config): Vesper theme, 18-point font, a 100-column × 26-row window, padding, and the holographic Dock icon. Edit the template to keep your changes for the next setup, or edit the installed `~/.config/ghostty/config.ghostty` for this Mac. Reload Ghostty's configuration after editing; open a new window for size changes. The icon setting doesn't change the Finder icon.
 
 ```sh
 cp .env.example .env.local

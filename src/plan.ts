@@ -50,7 +50,8 @@ export function buildPlan(selection: Selection, local: LocalConfig, root: string
     manual('dev', 'Open OrbStack once to finish setup. Authenticate GitHub CLI with gh auth login when ready.');
   }
   if (has('terminal')) {
-    pkg('terminal', 'warp', true, 'Warp.app');
+    const terminal = selection.terminal ?? 'warp';
+    pkg('terminal', terminal, true, terminal === 'ghostty' ? 'Ghostty.app' : 'Warp.app');
     pkg('terminal', 'font-jetbrains-mono-nerd-font', true);
     for (const name of ['fish', 'starship', 'zoxide', 'fzf', 'fd', 'forgit', 'bat', 'eza', 'tmux']) pkg('terminal', name);
     file('terminal', 'config/fish/config.fish', '.config/fish/config.fish');
@@ -64,7 +65,16 @@ export function buildPlan(selection: Selection, local: LocalConfig, root: string
       content: `# Generated locally. Do not publish.\nset -gx MAC_SETUP_GIT_NAME ${fishQuote(local.MAC_SETUP_GIT_NAME)}\nset -gx MAC_SETUP_GIT_EMAIL ${fishQuote(local.MAC_SETUP_GIT_EMAIL)}\n`,
       label: 'Write local Fish Git identity (values hidden; back up if changed)',
     });
-    manual('terminal', 'In Warp, select Fish as the shell and JetBrainsMono Nerd Font Mono as the font. Login shell and Warp preferences are left for manual setup.');
+    if (terminal === 'ghostty') {
+      const fishPath = process.arch === 'arm64' ? '/opt/homebrew/bin/fish' : '/usr/local/bin/fish';
+      actions.push({ module: 'terminal', kind: 'file', target: join(home, '.config/ghostty/config.ghostty'),
+        content: readFileSync(join(root, 'config/ghostty/config'), 'utf8').replace('{{FISH_PATH}}', fishPath),
+        label: 'Configure Ghostty with Fish and JetBrains Mono Nerd Font (back up if changed)',
+      });
+      manual('terminal', 'Open Ghostty after setup. It launches Fish with your Starship prompt. The system login shell is unchanged.');
+    } else {
+      manual('terminal', 'In Warp, select Fish as the shell and JetBrainsMono Nerd Font Mono as the font. Login shell and Warp preferences are left for manual setup.');
+    }
   }
   if (has('editor')) {
     pkg('editor', 'cursor', true, 'Cursor.app');

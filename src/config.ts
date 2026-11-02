@@ -9,7 +9,7 @@ export type ModuleId = z.infer<typeof moduleSchema>;
 export const moduleLabels: Record<ModuleId, string> = {
   apps: 'Apps — browsers, AI, work and personal apps',
   dev: 'Development — Node/npm, Python/uv, Git and OrbStack',
-  terminal: 'Terminal — Warp, Fish, Starship, tools and config',
+  terminal: 'Terminal — Warp or Ghostty, Fish, Starship, tools and config',
   editor: 'Editor — Cursor, font, settings and three extensions',
   macos: 'macOS — appearance, scrolling, Finder and Dock',
 };
@@ -40,6 +40,7 @@ export const appCatalog = [
 
 export const selectionSchema = z.object({
   modules: z.array(moduleSchema).min(1),
+  terminal: z.enum(['warp', 'ghostty']).optional(),
   apps: z.array(z.string().refine(id => appCatalog.some(app => app.id === id), 'Unknown app')),
 });
 export type Selection = z.infer<typeof selectionSchema>;
@@ -70,14 +71,15 @@ export function parseOptions(args: string[]) {
     'dry-run': { type: 'boolean', default: false },
     apply: { type: 'boolean', default: false },
     yes: { type: 'boolean', default: false },
-    only: { type: 'string' }, apps: { type: 'string' },
+    only: { type: 'string' }, apps: { type: 'string' }, terminal: { type: 'string' },
     help: { type: 'boolean', short: 'h', default: false },
   } });
   if (values.apply && values['dry-run']) throw new Error('Choose --apply or --dry-run, not both.');
   const modules = values.only === undefined ? [...moduleIds] : values.only.split(',');
   const apps = values.apps === undefined ? appCatalog.map(app => app.id) : values.apps.split(',').filter(Boolean);
-  const parsed = selectionSchema.safeParse({ modules, apps });
+  const parsed = selectionSchema.safeParse({ modules, apps, terminal: values.terminal ?? 'warp' });
   if (!parsed.success) throw new Error('Invalid module or app selection. Run with --help for available names.');
   if (values.apps !== undefined && !parsed.data.modules.includes('apps')) throw new Error('--apps requires the apps module.');
+  if (values.terminal !== undefined && !parsed.data.modules.includes('terminal')) throw new Error('--terminal requires the terminal module.');
   return { ...values, selection: parsed.data };
 }
