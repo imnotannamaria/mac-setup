@@ -20,8 +20,6 @@ export const appCatalog = [
   { id: 'claude', label: 'Claude', cask: 'claude', app: 'Claude.app' },
   { id: 'claude-code', label: 'Claude Code CLI', cask: 'claude-code', binary: 'claude' },
   { id: 'chatgpt', label: 'ChatGPT', cask: 'chatgpt', app: 'ChatGPT.app' },
-  { id: 'codex', label: 'Codex CLI', cask: 'codex', binary: 'codex' },
-  { id: 'codex-app', label: 'Codex desktop', cask: 'codex-app', app: 'Codex.app' },
   { id: 'notion', label: 'Notion', cask: 'notion', app: 'Notion.app' },
   { id: 'spotify', label: 'Spotify', cask: 'spotify', app: 'Spotify.app' },
   { id: 'granola', label: 'Granola', cask: 'granola', app: 'Granola.app' },
@@ -70,11 +68,13 @@ export function parseOptions(args: string[]) {
   const { values } = parseArgs({ args, strict: true, options: {
     'dry-run': { type: 'boolean', default: false },
     apply: { type: 'boolean', default: false },
+    doctor: { type: 'boolean', default: false },
     yes: { type: 'boolean', default: false },
     only: { type: 'string' }, apps: { type: 'string' }, terminal: { type: 'string' },
     help: { type: 'boolean', short: 'h', default: false },
   } });
   if (values.apply && values['dry-run']) throw new Error('Choose --apply or --dry-run, not both.');
+  if (values.doctor && (values.apply || values['dry-run'])) throw new Error('--doctor cannot be combined with --apply or --dry-run.');
   const modules = values.only === undefined ? [...moduleIds] : values.only.split(',');
   const apps = values.apps === undefined ? appCatalog.map(app => app.id) : values.apps.split(',').filter(Boolean);
   const parsed = selectionSchema.safeParse({ modules, apps, terminal: values.terminal ?? 'warp' });

@@ -25,14 +25,13 @@ async function fixture() {
     cleanup: () => rm(dir, { recursive: true, force: true }) };
 }
 
-test('terminal chooses zoxide and apps include separate Codex CLI and desktop actions', () => {
+test('terminal chooses zoxide and apps keep ChatGPT without standalone Codex installs', () => {
   assert.ok(!pluginAction.plugins.includes('jethrokuan/z'));
   assert.ok(pluginAction.plugins.includes('jorgebucaran/fisher'));
-  const apps = buildPlan({ modules: ['apps'], apps: ['codex', 'codex-app'] }, local, root, '/tmp/example');
+  const apps = buildPlan({ modules: ['apps'], apps: ['chatgpt'] }, local, root, '/tmp/example');
   const packages = apps.filter(action => action.kind === 'package');
-  assert.equal(packages.length, 2);
-  assert.ok(packages.some(action => action.name === 'codex-app' && action.app === 'Codex.app'));
-  assert.ok(packages.some(action => action.name === 'codex' && action.binary === 'codex'));
+  assert.equal(packages.length, 1);
+  assert.ok(packages.some(action => action.name === 'chatgpt' && action.app === 'ChatGPT.app'));
 });
 
 test('Fish state is backed up before plugin changes; unrelated plugins survive and reruns skip installation', async () => {

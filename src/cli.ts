@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { appCatalog, loadLocalConfig, moduleIds, moduleLabels, parseOptions, selectionSchema, type ModuleId, type Selection } from './config.ts';
 import { buildPlan, describeAction } from './plan.ts';
 import { executePlan, type Result } from './runner.ts';
+import { diagnose } from './doctor.ts';
 
 const colors = pc.createColors(pc.isColorSupported && process.env.NO_COLOR === undefined);
 const moduleColors: Record<ModuleId, (text: string) => string> = {
@@ -39,6 +40,7 @@ async function main() {
   npm run setup -- [options]
 
   --dry-run         Show the plan without changing anything or making network calls
+  --doctor          Check the selected setup without installing or changing anything
   --apply           Apply after showing the plan and asking for confirmation
   --yes             Use the default/explicit selection without prompts
                     Also confirms changes when paired with --apply
@@ -53,6 +55,17 @@ Without --apply, setup only previews. Non-interactive apply requires --yes.
 Close Cursor before applying editor settings. Existing files are replaced with backups.
 Local Git identity comes from .env.local or MAC_SETUP_GIT_NAME/MAC_SETUP_GIT_EMAIL.
 `);
+    return;
+  }
+  if (options.doctor) {
+    prompts.intro(colors.bgCyan(colors.black(' mac-setup doctor ')));
+    const results = await diagnose(options.selection, { root, home: homedir(), arch: process.arch, platform: process.platform });
+    const paint = { ok: colors.green, missing: colors.red, warning: colors.yellow };
+    for (const result of results) prompts.log.info(`${paint[result.status](result.status.toUpperCase())} ${result.label}: ${result.detail}`);
+    const missing = results.filter(result => result.status === 'missing').length;
+    const warnings = results.filter(result => result.status === 'warning').length;
+    prompts.outro(`${results.length - missing - warnings} OK, ${missing} missing, ${warnings} warnings. No changes made. Logins and permissions are not checked.`);
+    if (missing) process.exitCode = 1;
     return;
   }
   const interactive = Boolean(process.stdin.isTTY && process.stdout.isTTY && !options.yes && !options['dry-run']);

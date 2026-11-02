@@ -7,6 +7,7 @@ READ_ONLY=false
 ASSUME_YES=false
 APPLY=false
 DRY_RUN=false
+DOCTOR=false
 ONLY_SELECTION='apps,dev,terminal,editor,macos'
 APPS_SPECIFIED=false
 TERMINAL_SPECIFIED=false
@@ -15,6 +16,7 @@ parse_bootstrap_options() {
   while [ "$#" -gt 0 ]; do
     case "$1" in
       --dry-run) READ_ONLY=true; DRY_RUN=true ;;
+      --doctor) READ_ONLY=true; DOCTOR=true ;;
       --help|-h) READ_ONLY=true ;;
       --yes) ASSUME_YES=true ;;
       --apply) APPLY=true ;;
@@ -36,6 +38,9 @@ parse_bootstrap_options() {
   done
 }
 parse_bootstrap_options "$@"
+if [ "$DOCTOR" = true ] && { [ "$APPLY" = true ] || [ "$DRY_RUN" = true ]; }; then
+  echo '--doctor cannot be combined with --apply or --dry-run.' >&2; exit 1
+fi
 if [ "$APPLY" = true ] && [ "$DRY_RUN" = true ]; then
   echo 'Choose --apply or --dry-run, not both.' >&2; exit 1
 fi
@@ -75,7 +80,7 @@ fi
 
 if ! node_ready || [ ! -x "$ROOT/node_modules/.bin/tsx" ] || [ "$NEEDS_BREW" = true ]; then
   if [ "$READ_ONLY" = true ]; then
-    echo 'Preview needs Node >=22.16 and repo dependencies. No dependencies were installed.' >&2
+    echo 'Preview/doctor needs Node >=22.16 and repo dependencies. No dependencies were installed.' >&2
     echo 'Run ./install.sh interactively to prepare them, then retry this command.' >&2
     exit 1
   fi

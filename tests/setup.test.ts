@@ -28,6 +28,10 @@ test('preview is the default; invalid flags and conflicting modes fail', () => {
   assert.throws(() => parseOptions(['--aplly']));
   assert.ok(parseOptions([]).selection.apps.includes('dia'));
   assert.deepEqual(parseOptions(['--apps', 'dia']).selection.apps, ['dia']);
+  assert.ok(!parseOptions([]).selection.apps.includes('codex'));
+  assert.ok(!parseOptions([]).selection.apps.includes('codex-app'));
+  assert.throws(() => parseOptions(['--apps', 'codex']));
+  assert.throws(() => parseOptions(['--apps', 'codex-app']));
 });
 
 test('bootstrap rejects invalid flags, missing arguments and conflicting modes before dependency checks', async () => {

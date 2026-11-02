@@ -16,13 +16,14 @@ From a local checkout:
 ./install.sh --dry-run --only terminal,editor
 ./install.sh --apply --only terminal --terminal ghostty
 ./install.sh --help
+./install.sh --doctor --only terminal --terminal ghostty
 ```
 
 Use Space to select and Enter to continue. The bootstrap asks before installing missing dependencies. Preview needs Node.js 22.16+ and repo dependencies already installed; it won't install them for you. Apple Command Line Tools are required for bootstrap.
 
 | Module | Includes |
 | --- | --- |
-| `apps` | **Browsers:** Dia, Google Chrome. **AI:** Claude, Claude Code CLI, ChatGPT, Codex CLI, Codex desktop. **Work and personal:** Notion, Spotify, Granola, Slack, Linear, Raycast, Discord, Zoom, WhatsApp, RunCat, TextWarden. Select individual apps in the menu or with `--apps`. |
+| `apps` | **Browsers:** Dia, Google Chrome. **AI:** Claude, Claude Code CLI, ChatGPT. **Work and personal:** Notion, Spotify, Granola, Slack, Linear, Raycast, Discord, Zoom, WhatsApp, RunCat, TextWarden. Select individual apps in the menu or with `--apps`. |
 | `dev` | Node.js (includes npm), Python, uv, Git, GitHub CLI (`gh`), and OrbStack. |
 | `terminal` | **App:** Warp or Ghostty. **Shell and prompt:** Fish, Starship. **Tools:** zoxide, fzf, fd, forgit, bat, eza, tmux. **Font:** JetBrains Mono Nerd Font. Restores Fish config, Git/Docker/npm/tmux aliases, and the [plugins below](#fish-plugins). Ghostty also gets its shell and font config; optional Git identity comes from `.env.local`. |
 | `editor` | Cursor and JetBrains Mono Nerd Font. Restores editor settings and keybindings, including `Cmd+I` for the agent. Installs Bearded Theme, Material Icon Theme, and Cursor Pyright. |
@@ -31,6 +32,10 @@ Use Space to select and Enter to continue. The bootstrap asks before installing 
 RunCat uses [mas](https://github.com/mas-cli/mas): sign in to the App Store with an account that already acquired the app. TextWarden uses the [official DMG](https://github.com/PhilipSchmid/textwarden/releases/tag/v0.6.0), pinned to 0.6.0 with SHA-256 verification. Both are skipped if already installed.
 
 Choose Warp or Ghostty in the interactive menu, or pass `--terminal warp` / `--terminal ghostty`. Warp remains the default for unattended runs. Both use Fish + Starship. Ghostty gets a config with Fish and JetBrains Mono Nerd Font Mono; selecting either terminal doesn't uninstall the other.
+
+## Doctor
+
+`--doctor` checks the selected apps, CLI tools, fonts, config files, Fish plugins, Cursor extensions, and macOS preferences. It doesn't start your shell/editor, install dependencies, access the network, or write reports. Missing items return exit code 1; customized configs and differing preferences are warnings. Plugin checks confirm the manifest and files, not runtime behavior. Logins and permissions still need a manual check. Use `./install.sh --doctor` for all modules or `npm run doctor -- --only terminal --terminal ghostty`.
 
 ## Personal settings
 
@@ -64,7 +69,7 @@ The terminal module installs missing plugins with Fisher and backs up existing F
 
 Close Cursor. Existing configs are backed up and replaced, not merged. Installed packages and identical files are skipped; symlinked config paths are left untouched and reported. Backups and reports stay in `.local/backups/<run>/`. Restore files from `files/` to their original home-relative paths; preference JSON files record the old values and types. Rollback is manual.
 
-Logins, permissions, Warp's shell/font selection, and login-shell changes still need you. Choose `JetBrainsMono Nerd Font Mono` in Warp; the terminal and editor modules install the font. Codex CLI (`codex`) and desktop (`codex-app`) are separate app selections. Homebrew currently marks [codex-app](https://formulae.brew.sh/cask/codex-app) as deprecated, but still allows installation.
+Logins, permissions, Warp's shell/font selection, and login-shell changes still need you. Choose `JetBrainsMono Nerd Font Mono` in Warp; the terminal and editor modules install the font. The setup installs ChatGPT; standalone Codex CLI and legacy Codex desktop are excluded.
 
 The full installation test on a clean Mac is deferred until one is available.
 
